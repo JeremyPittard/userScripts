@@ -143,16 +143,27 @@ async function fetchRepository(directoryPath) {
 
     child.on('error', (err) => {
       if (spinner) clearInterval(spinner);
-      clearLine();
+
+      if (spinnerActive) {
+        process.stdout.write(`\rFetching ${name}... ❌\n`);
+      } else {
+        console.log(`Fetching ${name}... ❌`);
+      }
+
       console.error(`Failed to run git in ${name}: ${err.message}`);
       resolve({ success: false, updated: false });
     });
 
     child.on('close', (code) => {
       if (spinner) clearInterval(spinner);
-      clearLine();
 
       if (code !== 0) {
+        if (spinnerActive) {
+          process.stdout.write(`\rFetching ${name}... ❌\n`);
+        } else {
+          console.log(`Fetching ${name}... ❌`);
+        }
+
         console.error(`git fetch --all failed in ${name} with exit code ${code}`);
         return resolve({ success: false, updated: false });
       }
@@ -160,10 +171,23 @@ async function fetchRepository(directoryPath) {
       const refsAfterFetch = getRemoteRefs(directoryPath, name);
 
       if (refsAfterFetch === null) {
+        if (spinnerActive) {
+          process.stdout.write(`\rFetching ${name}... ❌\n`);
+        } else {
+          console.log(`Fetching ${name}... ❌`);
+        }
+
         return resolve({ success: false, updated: false });
       }
 
       const updated = refsBeforeFetch !== refsAfterFetch;
+
+      if (spinnerActive) {
+        process.stdout.write(`\rFetching ${name}... ✅\n`);
+      } else {
+        console.log(`Fetching ${name}... ✅`);
+      }
+
       return resolve({ success: true, updated });
     });
   });
@@ -223,10 +247,12 @@ async function main() {
   }
 
   if (updatedProjects.length > 0) {
-    console.log('\nThe following projects had updates:');
+    console.log('\nThe following projects need to be pulled and updated:');
     for (const p of updatedProjects) {
       console.log(`- ${p}`);
     }
+  } else {
+    console.log('\nAll repositories are up to date.');
   }
 
   if (successCount === repositories.length) {
