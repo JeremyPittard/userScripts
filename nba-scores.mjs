@@ -98,10 +98,34 @@ function printScore(event) {
   const type  = event.status?.type;
   const live  = type?.state === 'in';
   const done  = type?.completed;
-  const score = (live || done) ? `${bold(awayScore)}  –  ${bold(homeScore)}` : 'vs';
+  let score = 'vs';
+  let awayLabel = bold(awayName);
+  let homeLabel = bold(homeName);
+
+  if (live || done) {
+    const awayNum = Number(awayScore);
+    const homeNum = Number(homeScore);
+    const awayIsNum = !Number.isNaN(awayNum);
+    const homeIsNum = !Number.isNaN(homeNum);
+
+    let awayScoreLabel = bold(awayScore);
+    let homeScoreLabel = bold(homeScore);
+
+    if (awayIsNum && homeIsNum) {
+      if (awayNum > homeNum) {
+        awayLabel = bold(green(awayName));
+        awayScoreLabel = bold(green(awayScore));
+      } else if (homeNum > awayNum) {
+        homeLabel = bold(green(homeName));
+        homeScoreLabel = bold(green(homeScore));
+      }
+    }
+
+    score = `${awayScoreLabel}  –  ${homeScoreLabel}`;
+  }
 
   console.log(`\n${cyan('━'.repeat(64))}`);
-  console.log(`  ${bold(awayName)}  ${score}  ${bold(homeName)}`);
+  console.log(`  ${awayLabel}  ${score}  ${homeLabel}`);
   console.log(`  ${statusLabel(event)}`);
 }
 
