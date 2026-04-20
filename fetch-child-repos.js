@@ -2,9 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync, spawn } = require('child_process');
 
-const rootDirectory = process.cwd();
-const stateFilePath = path.join(rootDirectory, '.fetch-child-repos-state.json');
-const args = new Set(process.argv.slice(2));
+const argv = process.argv.slice(2);
+const rootDirectoryArg = argv.find((a) => !a.startsWith('-'));
+const rootDirectory = rootDirectoryArg ? path.resolve(rootDirectoryArg) : process.cwd();
+const args = new Set(argv);
+const stateFilePath = path.resolve('C:/Source/userScripts', '.fetch-child-repos-state.json');
 
 function getTodayString() {
   const now = new Date();
